@@ -143,7 +143,6 @@ ls "/mnt/c/Program Files"
 ls "/mnt/c/Program Files/Git"
 LICENSE.txt        bin  dev  git-bash.exe  tmp     unins000.dat  unins000.msg
 ReleaseNotes.html  cmd  etc  git-cmd.exe   ucrt64  unins000.exe  usr
-ia@win-hanako2025:/mnt/c/Users/User$
 ```
 Git がありましたね。
 ```
