@@ -17,7 +17,7 @@
 Docker Engineが社内プロキシの場所（アドレス）を知らないため、そもそも社外へ通信が抜けられない。
 
 2.企業Cert署名の壁（SSLエラー）:
-プロキシサーバーがHTTPS通信を復号・検査するために、通信経路上で「会社独自のルート証明書（企業CA）」を使って証明書を差し替えて再署名する。  
+プロキシサーバーがHTTPS通信を復号・検査するために、通信経路上で「会社独自のルート証明書（企業CA）」を使って証明書を差し替えて再署名する。
 Docker側は「見知らぬ偽の証明書にすり替えられた（中間者攻撃の疑い）」と判断し、安全のために通信を切断してエラーを出す。
 
 結果として、Dockerは x509: certificate signed by unknown authority などのエラーを出し、ログインやPullが一切通らなくなります。
@@ -96,11 +96,12 @@ Docker Desktopは、Windows側の証明書ストアを参照する仕組みを�
 管理者権限で端末全体を確認したい場合は certlm.msc を実行してください。
 
 ②社内CA証明書を探す
+
 * 左側ツリーから 「信頼されたルート証明機関」 > 「証明書」 をクリックします。
 * 一覧の中から、会社名やプロキシ製品名（例: Zscaler Root CA, BlueCoat, 社名が含まれるCA名）の証明書を見つけます。
 
 ③証明書をBase64形式でエクスポートする
- 必ず「Base 64 encoded X.509」を選択してください
+必ず「Base 64 encoded X.509」を選択してください
 
 * 該当の証明書を右クリックし、「すべてのタスク」 > 「エクスポート」 を選択します。
 * ウィザードが進んだら、エクスポート形式の選択で 「Base 64 encoded X.509 (.CER)」 を選択します。
@@ -324,7 +325,7 @@ docker build 実行中に apt-get、pip、npm、curl などのパッケージ取
 完成したイメージのレイヤーに社内証明書ファイルを焼き込まず、ビルド実行時の一時マウントとしてのみ証明書を渡すアプローチです。公開用イメージに社内証明書が混入するリスクを完全に防げます。
 
 1-1. Dockerfileの記述例（Ubuntu / Debian系ベースの場合）
-   RUN --mount=type=secret を利用し、一時的にOSの証明書ディレクトリにマウントした状態で update-ca-certificates を走らせ、パッケージを導入します。
+RUN --mount=type=secret を利用し、一時的にOSの証明書ディレクトリにマウントした状態で update-ca-certificates を走らせ、パッケージを導入します。
 
 ```
 Dockerfile
@@ -344,7 +345,7 @@ RUN --mount=type=secret,id=company-ca,target=/usr/local/share/ca-certificates/co
 ```
 
 1-2. Python (pip) の場合
-   pip は環境変数 PIP_CERT で指定したパスの証明書を直接参照できます。
+pip は環境変数 PIP_CERT で指定したパスの証明書を直接参照できます。
 
 ```
 Dockerfile
@@ -359,7 +360,7 @@ RUN --mount=type=secret,id=company-ca,target=/run/secrets/company-ca.crt \
 ```
 
 1-3. ビルド実行コマンド
-   ホスト側の証明書ファイルを id=company-ca として渡します。
+ホスト側の証明書ファイルを id=company-ca として渡します。
 
 ```
 Bash
@@ -394,11 +395,12 @@ RUN update-ca-certificates && \
 
 Node.jsやPythonなど、OSの証明書ストアではなく独自のバンドル証明書を優先して参照するツールを使う場合は、ビルド時引数（ARG または ENV）でパスを教えてあげる必要があります。
 
-ツール / 言語	環境変数・オプション	設定例
-Node.js (npm / yarn)	NODE_EXTRA_CA_CERTS	ENV NODE_EXTRA_CA_CERTS=/path/to/company-ca.crt
-Python (pip / requests)	PIP_CERT または REQUESTS_CA_BUNDLE	ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
-Git	http.sslCAInfo	RUN git config --global http.sslCAInfo /path/to/company-ca.crt
-Curl	CURL_CA_BUNDLE	ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+| ツール / 言語	| 環境変数・オプション |	設定例 |
+| ---- | ---- | ---- | 
+| Node.js (npm / yarn)	| NODE_EXTRA_CA_CERTS | ENV NODE_EXTRA_CA_CERTS=/path/to/company-ca.crt |
+| Python (pip / requests) | 	PIP_CERT または REQUESTS_CA_BUNDLE | 	ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt |
+| Git	| http.sslCAInfo |  	RUN git config --global http.sslCAInfo /path/to/company-ca.crt |
+| Curl	| CURL_CA_BUNDLE | 	ENV CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt |
 
 注意：プロキシ設定のビルドコンテナへの伝播
 証明書だけでなく、apt-get や pip が社内プロキシを通れずにタイムアウトや接続拒否になっているケースもあります。
@@ -423,11 +425,12 @@ GitLab CI/CD上でコンテナイメージをビルドする際、社内CA証明
 共通の前提準備：GitLab CI/CD 変数の登録
 リポジトリ（またはグループ）の Settings > CI/CD > Variables に以下を登録します。
 
-変数名	タイプ	内容・設定
-CORPORATE_CA_CERT	File	社内ルートCA証明書（company-ca.crt）のテキスト内容
-HTTP_PROXY	Variable	[http://proxy.example.com:8080](http://proxy.example.com:8080)
-HTTPS_PROXY	Variable	[http://proxy.example.com:8080](http://proxy.example.com:8080)
-NO_PROXY	Variable	localhost,127.0.0.1,.example.com,registry.gitlab.com
+| 変数名	 | タイプ | 内容・設定 |
+| --- | --- | ---- |
+| CORPORATE_CA_CERT |  	File	| 社内ルートCA証明書（company-ca.crt）のテキスト内容 |
+| HTTP_PROXY | 	Variable | 	[http://proxy.example.com:8080](http://proxy.example.com:8080) |
+| HTTPS_PROXY | 	Variable | 	[http://proxy.example.com:8080](http://proxy.example.com:8080) |
+| NO_PROXY | 	Variable | 	localhost,127.0.0.1,.example.com,registry.gitlab.com |
 
 ## 方式1: Kaniko によるビルド（特権不要・セキュア・推奨）
 
@@ -630,10 +633,11 @@ check_interval = 0
 
 ## 3. 各設定項目の役割
 
-項目	役割
-environment	ジョブコンテナ起動時に、大文字・小文字両方のプロキシ環境変数を自動設定します。また、Python（REQUESTS_CA_BUNDLE）やNode.js（NODE_EXTRA_CA_CERTS）が参照する証明書パスも事前指定します。
-/usr/local/share/ca-certificates/...:ro	Debian/Ubuntu系ベースのコンテナで、ジョブ開始時に update-ca-certificates を叩くだけでOSレベルで即時信頼される場所に配置します。
-/etc/docker/certs.d/...:ro	Docker-in-Docker（dind）サービスを利用する際、dindデーモンがレジストリ（GitLabやDocker Hub）へアクセスする際の信頼済み証明書として自動認識させます。
+| 項目	| 役割 |
+| -- | -- |
+| environment	| ジョブコンテナ起動時に、大文字・小文字両方のプロキシ環境変数を自動設定します。また、Python（REQUESTS_CA_BUNDLE）やNode.js（NODE_EXTRA_CA_CERTS）が参照する証明書パスも事前指定します。 |
+| /usr/local/share/ca-certificates/...:ro | 	Debian/Ubuntu系ベースのコンテナで、ジョブ開始時に update-ca-certificates を叩くだけでOSレベルで即時信頼される場所に配置します。 |
+| /etc/docker/certs.d/...:ro | 	Docker-in-Docker（dind）サービスを利用する際、dindデーモンがレジストリ（GitLabやDocker Hub）へアクセスする際の信頼済み証明書として自動認識させます。 |
 
 ## 4. 設定の反映と確認
 
